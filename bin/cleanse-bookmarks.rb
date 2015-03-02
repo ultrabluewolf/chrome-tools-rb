@@ -14,6 +14,6 @@ unless fname && output
   exit 1
 end
 
-data = ChromeTools::BookmarkUtils::read_file(ARGV[0])
+data = ChromeTools::BookmarkUtils::read_file(fname)
 
-ChromeTools::BookmarkUtils::cleanse_and_save(data, ARGV[1])
+ChromeTools::BookmarkUtils::cleanse_and_save(data, output)

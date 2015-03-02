@@ -6,6 +6,12 @@ require 'json'
 
 module ChromeTools::BookmarkUtils
 
+  SUBDIR = 'children'
+  TYPE = 'type'
+  FOLDER = 'folder'
+  NAME = 'name'
+  URL = 'url'
+
   def self.cleanse_and_save(bookmarks,fname="./Bookmarks.out")
     write_file(self.cleanse(bookmarks),fname)
   end
@@ -25,53 +31,45 @@ module ChromeTools::BookmarkUtils
   # kick off cleanse steps
   def self.cleanse(bookmarks)
     data = bookmarks['roots']['other']
-    sub='children'
-    type='type'
-    folder='folder'
     
     data = self.cleanse_step(data)
 
-    bookmarks['roots']['other'][sub] = data[sub]
+    bookmarks['roots']['other'][SUBDIR] = data[SUBDIR]
     bookmarks
   end
 
   # recursively do cleanse steps on nodes
   # : remove empty folders and on duplicate folders keep folder w/ most children
   def self.cleanse_step(root, level=0)
-    sub='children'
-    type='type'
-    folder='folder'
-    url = 'url'
-    
     map = {}
     list = []
 
-    return root unless root[sub]
+    return root unless root[SUBDIR]
 
-    root[sub].each{|node|
+    root[SUBDIR].each{|node|
 
-      node = self.cleanse_step(node,level+1) if node[type] == folder #&& level == 0
+      node = self.cleanse_step(node,level+1) if node[TYPE] == FOLDER #&& level == 0
 
-      puts "#{node['name']}: #{node[sub].count}" rescue nil #puts "#{node['name']}: #{node[url]}"
+      puts "#{node[NAME]}: #{node[SUBDIR].count}" rescue nil #puts "#{node[NAME]}: #{node[url]}"
 
-      val = map[ node['name'] ]
+      val = map[ node[NAME] ]
 
-      if val && node[type] == folder then
+      if val && node[TYPE] == FOLDER then
 
-        if val[sub].count < node[sub].count && !node[sub].empty? then
-          map[ node['name'] ] = node
-        elsif node[sub].empty?
-          puts "#{node['name']} is empty..."
+        if val[SUBDIR].count < node[SUBDIR].count && !node[SUBDIR].empty? then
+          map[ node[NAME] ] = node
+        elsif node[SUBDIR].empty?
+          puts "#{node[NAME]} is empty..."
         end
 
-      elsif node[type] != folder || !node[sub].empty?
-        map[ node['name'] ] = node
+      elsif node[TYPE] != FOLDER || !node[SUBDIR].empty?
+        map[ node[NAME] ] = node
       end
 
     }
 
     list = map.values
-    root[sub] = list
+    root[SUBDIR] = list
     root
   end
 
